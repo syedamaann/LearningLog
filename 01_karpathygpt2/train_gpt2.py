@@ -213,6 +213,9 @@ class DataLoaderLite:
             self.current_position = 0
         return x, y
 
+# attempt to autodetect the device
+import time
+
 device = "cpu"
 if torch.cuda.is_available():
     device = "cuda"
@@ -226,7 +229,9 @@ if torch.cuda.is_available():
     torch.cuda.manual_seed(1337)
 
 # load the data
-train_loader = DataLoaderLite(B=4, T=32)
+train_loader = DataLoaderLite(B=16, T=1024)
+
+torch.set_float32_matmul_precision('high')
 
 # get logits
 model = GPT(GPTConfig())
@@ -235,13 +240,18 @@ model.to(device)
 # optmise!
 optimiser = torch.optim.AdamW(model.parameters(), lr=3e-4)
 for i in range(50):
+    t0 = time.time()
     x, y = train_loader.next_batch()
     x, y = x.to(device), y.to(device)
     optimiser.zero_grad()
     logits, loss = model(x, y)
     loss.backward()
     optimiser.step()
-    print(i, loss.item())
+    torch.cuda.synchronize()    # wait for the GPU to finish work
+    t1 = time.time()
+    dt = (t1 - t0)*1000         # time in ms
+    tokens_per_sec = (train_loader.B * train_loader.T) / (dt / 1000)
+    print(f"step {i} loss {loss.item()} tokens/sec {tokens_per_sec:.2f} ms/batch {dt:.2f}")
 
 import sys; sys.exit(0)
 
