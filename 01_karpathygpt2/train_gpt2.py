@@ -1,4 +1,4 @@
-import math
+import math 
 from dataclasses import dataclass
 import torch
 import torch.nn as nn
@@ -93,13 +93,12 @@ class GPT(nn.Module):
             ln_f = nn.LayerNorm(config.n_embd),
         ))
         self.lm_head = nn.Linear(config.n_embd, config.vocab_size, bias=False)
-        
+
         # weight tie the embedding and unembedding matrix
         self.transformer.wte.weight = self.lm_head.weight
-        
+
         # init params
         self.apply(self._init_weights)
-        
 
     def _init_weights(self, module):
         if isinstance(module, nn.Linear):
@@ -112,7 +111,7 @@ class GPT(nn.Module):
         elif isinstance(module, nn.Embedding):
             torch.nn.init.normal_(module.weight, mean=0.0, std=0.02)
 
-    def forward(self, idx, target=None):
+    def forward(self, idx, targets=None):
         # idx is of shape (B, T)
         B, T = idx.size()
         assert T <= self.config.block_size, f"Cannot forward sequence of length {T}, block size is only {self.config.block_size}"
@@ -128,8 +127,8 @@ class GPT(nn.Module):
         x = self.transformer.ln_f(x)
         logits = self.lm_head(x) # (B, T, vocab_size)
         loss = None
-        if target is not None:
-            loss = F.cross_entropy(logits.view(-1, logits.size(-1)), target.view(-1))
+        if targets is not None:
+            loss = F.cross_entropy(logits.view(-1, logits.size(-1)), targets.view(-1))
         return logits, loss
 
     @classmethod
@@ -213,6 +212,7 @@ class DataLoaderLite:
             self.current_position = 0
         return x, y
 
+# -----------------------------------------------------------------------------
 # attempt to autodetect the device
 import time
 
@@ -222,13 +222,11 @@ if torch.cuda.is_available():
 elif hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
     device = "mps"
 print(f"using device: {device}")
-device = 'cpu'
 
 torch.manual_seed(1337)
 if torch.cuda.is_available():
     torch.cuda.manual_seed(1337)
 
-# load the data
 train_loader = DataLoaderLite(B=16, T=1024)
 
 torch.set_float32_matmul_precision('high')
@@ -237,25 +235,25 @@ torch.set_float32_matmul_precision('high')
 model = GPT(GPTConfig())
 model.to(device)
 
-# optmise!
-optimiser = torch.optim.AdamW(model.parameters(), lr=3e-4)
+# optimize!
+optimizer = torch.optim.AdamW(model.parameters(), lr=3e-4)
 for i in range(50):
     t0 = time.time()
     x, y = train_loader.next_batch()
     x, y = x.to(device), y.to(device)
-    optimiser.zero_grad()
+    optimizer.zero_grad()
     logits, loss = model(x, y)
     loss.backward()
-    optimiser.step()
-    torch.cuda.synchronize()    # wait for the GPU to finish work
+    optimizer.step()
+    torch.cuda.synchronize() # wait for the GPU to finish work
     t1 = time.time()
-    dt = (t1 - t0)*1000         # time in ms
-    tokens_per_sec = (train_loader.B * train_loader.T) / (dt / 1000)
-    print(f"step {i} loss {loss.item()} tokens/sec {tokens_per_sec:.2f} ms/batch {dt:.2f}")
+    dt = (t1 - t0)*1000 # time difference in miliseconds
+    tokens_per_sec = (train_loader.B * train_loader.T) / (t1 - t0)
+    print(f"step {i}, loss: {loss.item()}, dt: {dt:.2f}ms, tok/sec: {tokens_per_sec:.2f}")
 
 import sys; sys.exit(0)
 
-# prefix token
+# prefix tokens
 model.eval()
 num_return_sequences = 5
 max_length = 30
