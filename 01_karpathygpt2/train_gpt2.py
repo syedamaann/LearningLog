@@ -186,8 +186,16 @@ y = buf[1:].view(B, T)
 # get logits
 model = GPT(GPTConfig())
 model.to(device)
-logits, loss = model(x, y)
-print(loss)
+
+# optmise!
+optimiser = torch.optim.AdamW(model.parameters(), lr=3e-4)
+for i in range(50):
+    optimiser.zero_grad()
+    logits, loss = model(x, y)
+    loss.backward()
+    optimiser.step()
+    print(i, loss.item())
+
 import sys; sys.exit(0)
 
 # prefix token
