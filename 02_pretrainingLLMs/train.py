@@ -25,3 +25,16 @@ urls = [
     "https://raw.githubusercontent.com/Joshua-Barawa/My-Photos/master/venv/lib/python3.8/site-packages/django/contrib/messages/__init__.py",
     "https://raw.githubusercontent.com/PaliC/pytorch/master/test/fx/test_subgraph_rewriter.py"
 ]
+
+# Download the code files and save them to the code directory
+code_dir = "./code"
+os.makedirs(code_dir, exist_ok=True)    # Create the code directory if it does not exist
+print("Downloading code files...")
+for url in urls:
+    print(f"Working on url: {url}")
+    response = requests.get(url)
+    file_name = os.path.basename(url)
+    file_path = os.path.join(code_dir, file_name)
+    
+    with open(file_path, "wb") as file:
+        file.write(response.content)
