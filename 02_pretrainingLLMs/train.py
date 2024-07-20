@@ -66,3 +66,41 @@ dataset = dataset.filter(
     paragraph_length_filter,
     load_from_cache_file=False
 )
+
+# Define a function to find duplicates
+def find_duplicates(paragraphs):
+    """
+    Use this function to find the number of repetitions 
+    in the paragraphs.
+    """
+    unique_x = set()
+    duplicate_chars = 0
+    duplicate_elements = 0
+    for element in paragraphs:
+        if element in unique_x:
+            duplicate_chars += len(element)
+            duplicate_elements += 1
+        else:
+            unique_x.add(element)
+    return duplicate_elements, duplicate_chars
+
+# Define a filter to remove paragraphs with too many repetitions
+def paragraph_repetition_filter(x):
+    """
+    Returns False iff a page has too many repetitions.
+    """
+    text = x['text']
+    paragraphs = re.compile(r"\n{2,}").split(text.strip())                # Split by paragraphs (2 or more newlines)
+    paragraphs_duplicates, char_duplicates = find_duplicates(paragraphs)  # Find number of duplicates in paragraphs
+    if paragraphs_duplicates / len(paragraphs) > 0.3:
+        return False
+    if char_duplicates / len(text) > 0.2:
+        return False
+    return True
+
+# Apply the filter
+print("Filtering out paragraphs with too many repetitions...")
+dataset = dataset.filter(
+    paragraph_repetition_filter,
+    load_from_cache_file=False
+)
