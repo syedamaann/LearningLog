@@ -46,3 +46,5 @@ for file in os.listdir(code_dir):
     code_dataset.append({'text': open(os.path.join(code_dir, file), 'r').read()})
 code_dataset = datasets.Dataset.from_list(code_dataset)     # Convert the list of dictionaries to a HF dataset object
 
+# Concatenate the pretraining and code datasets to get the final dataset
+dataset = datasets.concatenate_datasets([pretraining_dataset, code_dataset])
