@@ -142,3 +142,10 @@ def english_language_filter(ds):
 # Apply the filter
 print("Filtering out non-English paragraphs...")
 dataset = english_language_filter(dataset)
+
+# Save the dataset to a parquet file
+print("Saving the dataset to a parquet file...")
+file_path = "./data/preprocessed_dataset.parquet"
+dataset.to_parquet(file_path)
+
+print("Preprocessing completed successfully!")
