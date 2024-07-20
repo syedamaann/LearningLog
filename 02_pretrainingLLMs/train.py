@@ -156,3 +156,10 @@ print("Preprocessing completed successfully!")
 print("Splitting the dataset into 10 shards and selecting the first shard...")
 dataset = dataset.shard(num_shards=10, index=0)
 
+# Load the tokenizer
+print("Loading the tokenizer...")
+model_path_or_name = "upstage/SOLAR-10.7B-v1.0"
+tokenizer = AutoTokenizer.from_pretrained(
+    model_path_or_name, 
+    use_fast=False
+)
