@@ -163,3 +163,29 @@ tokenizer = AutoTokenizer.from_pretrained(
     model_path_or_name, 
     use_fast=False
 )
+
+# Define a function to tokenize the dataset
+def tokenization(example):
+    # Tokenize
+    tokens = tokenizer.tokenize(example["text"])
+
+    # Convert tokens to ids
+    token_ids = tokenizer.convert_tokens_to_ids(tokens)
+
+    # Add <bos>, <eos> tokens to the front and back of tokens_ids 
+    # bos: begin of sequence, eos: end of sequence
+    token_ids = [
+        tokenizer.bos_token_id] \
+        + token_ids \
+        + [tokenizer.eos_token_id
+    ]
+    example["input_ids"] = token_ids
+
+    # We will be using this column to count the total number of tokens 
+    # in the final dataset
+    example["num_tokens"] = len(token_ids)
+    return example
+
+# Apply the tokenization function
+print("Tokenizing the dataset...")
+dataset = dataset.map(tokenization, load_from_cache_file=False)
