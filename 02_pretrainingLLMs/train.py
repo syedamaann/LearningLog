@@ -48,3 +48,21 @@ code_dataset = datasets.Dataset.from_list(code_dataset)     # Convert the list o
 
 # Concatenate the pretraining and code datasets to get the final dataset
 dataset = datasets.concatenate_datasets([pretraining_dataset, code_dataset])
+
+# Define a filter to remove paragraphs with too few lines or lines that are too short
+def paragraph_length_filter(x):        
+    """Returns False iff a page has too few lines or lines are too short."""
+    lines = x['text'].split('\n')
+    if (
+        len(lines) < 3
+        or min(heapq.nlargest(3, [len(line) for line in lines])) < 3
+    ):
+        return False
+    return True
+
+# Apply the filter
+print("Filtering out paragraphs with too few lines or lines that are too short...")
+dataset = dataset.filter(
+    paragraph_length_filter,
+    load_from_cache_file=False
+)
