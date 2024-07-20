@@ -104,3 +104,22 @@ dataset = dataset.filter(
     paragraph_repetition_filter,
     load_from_cache_file=False
 )
+
+# Define a function to remove duplicate entries
+def deduplication(ds):
+    def dedup_func(x):
+        """Use this function to remove duplicate entries"""
+        if x['text'] in unique_text:
+            return False
+        else:
+            unique_text.add(x['text'])
+            return True
+
+    unique_text = set()
+
+    ds = ds.filter(dedup_func, load_from_cache_file=False, num_proc=1)
+    return ds
+
+# Apply the filter
+print("Removing duplicate entries...")
+dataset = deduplication(dataset)
