@@ -5,6 +5,7 @@ import requests
 import heapq
 import re
 import urllib
+import numpy as np
 from fasttext.FastText import _FastText
 from transformers import AutoTokenizer
 
@@ -189,3 +190,32 @@ def tokenization(example):
 # Apply the tokenization function
 print("Tokenizing the dataset...")
 dataset = dataset.map(tokenization, load_from_cache_file=False)
+
+# Print the total number of tokens in the dataset (we should know the numbers of tokens so that we can turn them into (B,T))
+print("Total number of tokens in the dataset: ", np.sum(dataset["num_tokens"]))
+
+# Concatenate the input_ids
+print("Concatenating the input_ids into a single tensor...")
+input_ids = np.concatenate(dataset["input_ids"])
+
+# Define the max sequence length
+max_seq_length = 32
+
+# Discard extra tokens from end of the list so number of tokens is exactly divisible by max_seq_length
+print("Truncating the input_ids to the nearest multiple of max_seq_length...")
+total_length = len(input_ids) - len(input_ids) % max_seq_length
+input_ids = input_ids[:total_length]
+
+# Reshape the input_ids to (B, T)
+input_ids_reshaped = input_ids.reshape(-1, max_seq_length).astype(np.int32)
+
+# Convert the input_ids to a HF dataset
+print("Converting the input_ids to a HF dataset...")
+input_ids_list = input_ids_reshaped.tolist()
+packaged_pretrain_dataset = datasets.Dataset.from_dict(
+    {"input_ids": input_ids_list}
+)
+
+# Save the dataset to a parquet file
+print("Saving the dataset to a parquet file...")
+packaged_pretrain_dataset.to_parquet("./data/packaged_pretrain_dataset.parquet")
