@@ -38,3 +38,11 @@ for url in urls:
     
     with open(file_path, "wb") as file:
         file.write(response.content)
+
+# Load the code files into a dataset
+print("Loading code files into a dataset...")
+code_dataset = []   
+for file in os.listdir(code_dir):
+    code_dataset.append({'text': open(os.path.join(code_dir, file), 'r').read()})
+code_dataset = datasets.Dataset.from_list(code_dataset)     # Convert the list of dictionaries to a HF dataset object
+
