@@ -123,3 +123,22 @@ def deduplication(ds):
 # Apply the filter
 print("Removing duplicate entries...")
 dataset = deduplication(dataset)
+
+# Define a function to remove non-English paragraphs
+def english_language_filter(ds):
+    # load language detection model
+    model = _FastText('./models/L2_language_model.bin')
+    
+    def is_english(x):
+        # Predict language of the text and probability
+        language, score = model.predict(x['text'].replace("\n", ""))
+
+        language = language[0].split("__")[2]
+        return score > 0.4 and language == "en" # change code here if building a model in another language
+
+    ds = ds.filter(is_english, load_from_cache_file=False, num_proc=1)
+    return ds
+
+# Apply the filter
+print("Filtering out non-English paragraphs...")
+dataset = english_language_filter(dataset)
