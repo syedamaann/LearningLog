@@ -9,6 +9,8 @@ import numpy as np
 from fasttext.FastText import _FastText
 from transformers import AutoTokenizer
 from transformers import LlamaConfig
+from transformers import LlamaForCausalLM
+from transformers import AutoModelForCausalLM
 
 # Suppress the warnings
 warnings.filterwarnings("ignore") 
@@ -237,3 +239,6 @@ config.use_cache = False           # `True` is incompatible w/ gradient checkpoi
 # Print the config
 print("Printing the config...")
 print(config)
+
+# Random Weight Initialization 
+# model = LlamaForCausalLM(config) 
