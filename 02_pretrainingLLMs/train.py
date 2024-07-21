@@ -7,8 +7,10 @@ import re
 import urllib
 import numpy as np
 import torch
+import transformers
 from torch.utils.data import Dataset
 from fasttext.FastText import _FastText
+from dataclasses import dataclass, field
 from transformers import AutoTokenizer
 from transformers import LlamaConfig
 from transformers import LlamaForCausalLM
@@ -134,24 +136,24 @@ def deduplication(ds):
 print("Removing duplicate entries...")
 dataset = deduplication(dataset)
 
-# # Define a function to remove non-English paragraphs
-# def english_language_filter(ds):
-#     # load language detection model
-#     model = _FastText('./models/L2_language_model.bin')
+# Define a function to remove non-English paragraphs
+def english_language_filter(ds):
+    # load language detection model
+    model = _FastText('./models/L2_language_model.bin')
     
-#     def is_english(x):
-#         # Predict language of the text and probability
-#         language, score = model.predict(x['text'].replace("\n", ""))
+    def is_english(x):
+        # Predict language of the text and probability
+        language, score = model.predict(x['text'].replace("\n", ""))
 
-#         language = language[0].split("__")[2]
-#         return score > 0.4 and language == "en" # change code here if building a model in another language
+        language = language[0].split("__")[2]
+        return score > 0.4 and language == "en" # change code here if building a model in another language
 
-#     ds = ds.filter(is_english, load_from_cache_file=False, num_proc=1)
-#     return ds
+    ds = ds.filter(is_english, load_from_cache_file=False, num_proc=1)
+    return ds
 
-# # Apply the filter
-# print("Filtering out non-English paragraphs...")
-# dataset = english_language_filter(dataset)
+# Apply the filter
+print("Filtering out non-English paragraphs...")
+dataset = english_language_filter(dataset)
 
 # Save the dataset to a parquet file
 print("Saving the dataset to a parquet file...")
@@ -364,4 +366,37 @@ class CustomDataset(Dataset):                   # Inherit from Pytorch's Dataset
 
         # Return the sample as a dictionary
         return {"input_ids": input_ids, "labels": labels}
+    
+ 
+# Configure Training Arguments
+@dataclass
+class CustomArguments(transformers.TrainingArguments):
+    dataset_name: str = field(                           # Dataset configuration
+        default="./parquet/packaged_pretrain_dataset.parquet")
+    num_proc: int = field(default=1)                     # Number of subprocesses for data preprocessing
+    max_seq_length: int = field(default=32)              # Maximum sequence length
 
+    # Core training configurations
+    seed: int = field(default=0)                         # Random seed for initialization, ensuring reproducibility
+    optim: str = field(default="adamw_torch")            # Optimizer, here it's AdamW implemented in PyTorch
+    max_steps: int = field(default=30)                   # Number of maximum training steps
+    per_device_train_batch_size: int = field(default=2)  # Batch size per device during training
+
+    # Other training configurations
+    learning_rate: float = field(default=5e-5)           # Initial learning rate for the optimizer
+    weight_decay: float = field(default=0)               # Weight decay
+    warmup_steps: int = field(default=10)                # Number of steps for the learning rate warmup phase
+    lr_scheduler_type: str = field(default="linear")     # Type of learning rate scheduler
+    gradient_checkpointing: bool = field(default=True)   # Enable gradient checkpointing to save memory
+    dataloader_num_workers: int = field(default=2)       # Number of subprocesses for data loading
+    bf16: bool = field(default=True)                     # Use bfloat16 precision for training on supported hardware
+    gradient_accumulation_steps: int = field(default=1)  # Number of steps to accumulate gradients before updating model weights
+    
+    # Logging configuration
+    logging_steps: int = field(default=3)                # Frequency of logging training information
+    report_to: str = field(default="none")               # Destination for logging (e.g., WandB, TensorBoard)
+
+    # Saving configuration
+    # save_strategy: str = field(default="steps")          # Can be replaced with "epoch"
+    # save_steps: int = field(default=3)                   # Frequency of saving training checkpoint
+    # save_total_limit: int = field(default=2)             # The total number of checkpoints to be saved
