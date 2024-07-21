@@ -8,6 +8,7 @@ import urllib
 import numpy as np
 from fasttext.FastText import _FastText
 from transformers import AutoTokenizer
+from transformers import LlamaConfig
 
 # Suppress the warnings
 warnings.filterwarnings("ignore") 
@@ -219,3 +220,20 @@ packaged_pretrain_dataset = datasets.Dataset.from_dict(
 # Save the dataset to a parquet file
 print("Saving the dataset to a parquet file...")
 packaged_pretrain_dataset.to_parquet("./data/packaged_pretrain_dataset.parquet")
+
+# Create a LlamaConfig object to configure the architecture of the model
+print("Creating a LlamaConfig object...")
+config = LlamaConfig()
+
+# Update parameters to change the model architecture
+print("Updating parameters to change the model architecture...")
+config.num_hidden_layers = 12      # reduced from 32 to 12
+config.hidden_size = 1024          # reduced 1/4 from 4096 to 1024
+config.intermediate_size = 4096    # reduced 1/3 from 11008 to 4096 (dimension of MLP representations)
+config.num_key_value_heads = 8     # reduced 1/4 from 32 to 8 (defaults to num_attention_heads=32)
+config.torch_dtype = "bfloat16"    # for half-precision training
+config.use_cache = False           # `True` is incompatible w/ gradient checkpointing
+
+# Print the config
+print("Printing the config...")
+print(config)
