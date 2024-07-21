@@ -308,3 +308,17 @@ pretrained_model = AutoModelForCausalLM.from_pretrained(
     torch_dtype=torch.bfloat16,    
 )
 tokenizer = AutoTokenizer.from_pretrained(model_name_or_path)
+
+# Copy the bottom 8 and top 8 layers from the pretrained 12 layer model and use them to overwrite the random weights of the 16 layer model
+print("Copying the bottom 8 and top 8 layers from the 12 layer model...")
+model.model.layers = deepcopy(pretrained_model.model.layers[:-4]) \
+    + deepcopy(pretrained_model.model.layers[4:])
+
+# Copy the embed_tokens and lm_head layers from the pretrained 12 layer model
+print("Copying the embed_tokens and lm_head layers from the pretrained model...")
+model.model.embed_tokens = deepcopy(pretrained_model.model.embed_tokens)
+model.lm_head = deepcopy(pretrained_model.lm_head)
+
+# Print the config of the updated model
+print("Printing the config of the updated model...")
+print(model.config)
