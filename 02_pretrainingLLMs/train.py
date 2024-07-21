@@ -6,11 +6,14 @@ import heapq
 import re
 import urllib
 import numpy as np
+import torch
 from fasttext.FastText import _FastText
 from transformers import AutoTokenizer
 from transformers import LlamaConfig
 from transformers import LlamaForCausalLM
 from transformers import AutoModelForCausalLM
+from transformers import TextStreamer
+from copy import deepcopy
 
 # Suppress the warnings
 warnings.filterwarnings("ignore") 
@@ -272,3 +275,26 @@ print(config)
 # model.config = config                             # update the model config
 
 # print_nparams(model)  # 217601024 => 217M
+
+
+# Configure a 16 layer model and initialize it with random weights
+print("Configuring a 16 layer model...")
+config = LlamaConfig(
+    num_hidden_layers=16,  # We want our model to have 16 final layers
+    hidden_size=1024,
+    intermediate_size=4096,
+    num_attention_heads=32,
+    num_key_value_heads=8,
+    torch_dtype="bfloat16",
+    use_cache=False 
+)
+print("Initializing the model with random weights...")
+model = LlamaForCausalLM(config)
+model = model.to(dtype=torch.bfloat16)  # convert to bfloat16
+
+# Print the number of parameters in the model
+def print_nparams(model):
+    """Calculate the total number of model parameters"""
+    nparams = sum(p.numel() for p in model.parameters())
+    print(f"The total number of parameters is: {nparams}")
+print_nparams(model)  # 248013824 => 248M
