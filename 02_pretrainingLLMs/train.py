@@ -322,3 +322,6 @@ model.lm_head = deepcopy(pretrained_model.lm_head)
 # Print the config of the updated model
 print("Printing the config of the updated model...")
 print(model.config)
+
+# Save the model to a directory
+model.save_pretrained('./data/TinySolar-308m-4k-init') # new model name here reflects the 308 million parameters of the new, upscaled model
