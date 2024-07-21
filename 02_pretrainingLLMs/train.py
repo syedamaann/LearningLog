@@ -7,6 +7,7 @@ import re
 import urllib
 import numpy as np
 import torch
+from torch.utils.data import Dataset
 from fasttext.FastText import _FastText
 from transformers import AutoTokenizer
 from transformers import LlamaConfig
@@ -334,3 +335,33 @@ pretrained_model = AutoModelForCausalLM.from_pretrained(
     torch_dtype=torch.bfloat16,
     use_cache=False,
 )
+
+
+# Load the dataset
+print("Loading the dataset...")
+class CustomDataset(Dataset):                   # Inherit from Pytorch's Dataset class
+    def __init__(self, args, split="train"):
+        """Initializes the custom dataset object."""
+        self.args = args
+        self.dataset = datasets.load_dataset(
+            "parquet",
+            data_files=args.dataset_name,
+            split=split
+        )
+
+    def __len__(self):
+        """Returns the number of samples in the dataset."""
+        return len(self.dataset)
+
+    def __getitem__(self, idx):
+        """
+        Retrieves a single data sample from the dataset 
+        at the specified index
+        """
+        # Convert the lists to a LongTensor for PyTorch
+        input_ids = torch.LongTensor(self.dataset[idx]["input_ids"])
+        labels = torch.LongTensor(self.dataset[idx]["input_ids"])
+
+        # Return the sample as a dictionary
+        return {"input_ids": input_ids, "labels": labels}
+
