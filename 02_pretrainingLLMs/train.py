@@ -252,3 +252,23 @@ print(config)
 #     torch_dtype=torch.bfloat16,
 # )
 
+# downscaling from a general pretrained model
+# model_name_or_path = "upstage/TinySolar-248m-4k"
+# model = AutoModelForCausalLM.from_pretrained(
+#     model_name_or_path,
+#     device_map="cpu",
+#     torch_dtype=torch.bfloat16,
+# )
+# tokenizer = AutoTokenizer.from_pretrained(model_name_or_path)
+# print_nparams(model)  # 248013824 => 248M
+
+# layers = model.model.layers
+# model.model.layers = layers[:5] + layers[-5:]     # remove the middle two layers (layers 5 and 6)
+
+# config = AutoConfig.from_pretrained(              # update the config to reflect the new number of layers
+#     model_name_or_path,    
+#     num_hidden_layers=len(model.model.layers),
+# )
+# model.config = config                             # update the model config
+
+# print_nparams(model)  # 217601024 => 217M
