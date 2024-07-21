@@ -298,3 +298,13 @@ def print_nparams(model):
     nparams = sum(p.numel() for p in model.parameters())
     print(f"The total number of parameters is: {nparams}")
 print_nparams(model)  # 248013824 => 248M
+
+# Load the pretrained model and tokenizer
+print("Loading the pretrained 12 layer model and tokenizer...")
+model_name_or_path = "upstage/TinySolar-248m-4k"
+pretrained_model = AutoModelForCausalLM.from_pretrained(
+    model_name_or_path,
+    device_map="cpu",
+    torch_dtype=torch.bfloat16,    
+)
+tokenizer = AutoTokenizer.from_pretrained(model_name_or_path)
