@@ -242,3 +242,13 @@ print(config)
 
 # Random Weight Initialization 
 # model = LlamaForCausalLM(config) 
+
+# weight initialization using an existing model
+# # If you load an existing model, you can use it as is to continue pretraining on new data
+# model_name_or_path = "./models/upstage/TinySolar-248m-4k"
+# model = AutoModelForCausalLM.from_pretrained(
+#     model_name_or_path,
+#     device_map="cpu",
+#     torch_dtype=torch.bfloat16,
+# )
+
