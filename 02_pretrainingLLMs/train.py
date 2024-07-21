@@ -324,4 +324,13 @@ print("Printing the config of the updated model...")
 print(model.config)
 
 # Save the model to a directory
-model.save_pretrained('./data/TinySolar-308m-4k-init') # new model name here reflects the 308 million parameters of the new, upscaled model
+model.save_pretrained('./model/TinySolar-308m-4k-init') # new model name here reflects the 308 million parameters of the new, upscaled model
+
+# Load the pretrained model
+print("Loading the pretrained model...")
+pretrained_model = AutoModelForCausalLM.from_pretrained(
+    "./model/TinySolar-308m-4k-init",
+    device_map="cpu", 
+    torch_dtype=torch.bfloat16,
+    use_cache=False,
+)
