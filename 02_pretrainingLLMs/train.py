@@ -55,7 +55,10 @@ for url in urls:
 print("Loading code files into a dataset...")
 code_dataset = []   
 for file in os.listdir(code_dir):
-    code_dataset.append({'text': open(os.path.join(code_dir, file), 'r').read()})
+    file_path = os.path.join(code_dir, file)
+    if os.path.isfile(file_path):  # Ensure the entry is a file
+        with open(file_path, 'r') as f:
+            code_dataset.append({'text': f.read()})
 code_dataset = datasets.Dataset.from_list(code_dataset)     # Convert the list of dictionaries to a HF dataset object
 
 # Concatenate the pretraining and code datasets to get the final dataset
@@ -139,7 +142,7 @@ dataset = deduplication(dataset)
 # Define a function to remove non-English paragraphs
 def english_language_filter(ds):
     # load language detection model
-    model = _FastText('./models/L2_language_model.bin')
+    model = _FastText('./model/L2_language_model.bin')
     
     def is_english(x):
         # Predict language of the text and probability
@@ -340,7 +343,6 @@ pretrained_model = AutoModelForCausalLM.from_pretrained(
 
 
 # Load the dataset
-print("Loading the dataset...")
 class CustomDataset(Dataset):                   # Inherit from Pytorch's Dataset class
     def __init__(self, args, split="train"):
         """Initializes the custom dataset object."""
