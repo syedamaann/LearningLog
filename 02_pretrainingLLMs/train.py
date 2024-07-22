@@ -16,6 +16,7 @@ from transformers import LlamaConfig
 from transformers import LlamaForCausalLM
 from transformers import AutoModelForCausalLM
 from transformers import TextStreamer
+from transformers import Trainer, TrainingArguments, TrainerCallback
 from copy import deepcopy
 
 # Suppress the warnings
@@ -413,3 +414,15 @@ args, = parser.parse_args_into_dataclasses(
 
 # Setup the training dataset
 train_dataset = CustomDataset(args=args)
+
+# Define a custom callback to log the loss values
+class LossLoggingCallback(TrainerCallback):
+    def on_log(self, args, state, control, logs=None, **kwargs):
+        if logs is not None:
+            self.logs.append(logs)
+
+    def __init__(self):
+        self.logs = []
+
+# Initialize the callback
+loss_logging_callback = LossLoggingCallback()
