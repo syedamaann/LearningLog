@@ -391,7 +391,7 @@ class CustomArguments(transformers.TrainingArguments):
     warmup_steps: int = field(default=10)                # Number of steps for the learning rate warmup phase
     lr_scheduler_type: str = field(default="linear")     # Type of learning rate scheduler
     gradient_checkpointing: bool = field(default=True)   # Enable gradient checkpointing to save memory
-    dataloader_num_workers: int = field(default=2)       # Number of subprocesses for data loading
+    dataloader_num_workers: int = field(default=0)       # Number of subprocesses for data loading
     bf16: bool = field(default=False)                    # Use bfloat16 precision for training on supported hardware
     gradient_accumulation_steps: int = field(default=1)  # Number of steps to accumulate gradients before updating model weights
     
@@ -405,17 +405,21 @@ class CustomArguments(transformers.TrainingArguments):
     # save_total_limit: int = field(default=2)             # The total number of checkpoints to be saved    
 
 # Parse the custom arguments
+print("Parsing the custom arguments...")
 parser = transformers.HfArgumentParser(CustomArguments)
 
 # Set the output directory where the model will be saved
+print("Setting the output directory...")
 args, = parser.parse_args_into_dataclasses(
     args=["--output_dir", "output"]
 )
 
 # Setup the training dataset
+print("Setting up the training dataset...")
 train_dataset = CustomDataset(args=args)
 
 # Define a custom callback to log the loss values
+print("Defining a custom callback to log the loss values...")
 class LossLoggingCallback(TrainerCallback):
     def on_log(self, args, state, control, logs=None, **kwargs):
         if logs is not None:
@@ -425,9 +429,11 @@ class LossLoggingCallback(TrainerCallback):
         self.logs = []
 
 # Initialize the callback
+print("Initializing the callback...")
 loss_logging_callback = LossLoggingCallback()
 
 # create an instance of the Hugging Face Trainer object from the transformers library
+print("Creating an instance of the Hugging Face Trainer object...")
 trainer = Trainer(
     model=pretrained_model, 
     args=args, 
@@ -436,6 +442,7 @@ trainer = Trainer(
     callbacks=[loss_logging_callback] 
 )
 # initialize the training run
+print("Initializing the training run...")
 trainer.train()
 
 
@@ -460,4 +467,4 @@ def h6_open_llm_leaderboard(model_name):
     """
     os.system(eval_cmd)
 
-# h6_open_llm_leaderboard(model_name="YOUR_MODEL")
+# h6_open_llm_leaderboard(model_name="OUR_MODEL")
