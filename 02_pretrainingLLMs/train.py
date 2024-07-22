@@ -405,3 +405,8 @@ class CustomArguments(transformers.TrainingArguments):
 
 # Parse the custom arguments
 parser = transformers.HfArgumentParser(CustomArguments)
+
+# Set the output directory where the model will be saved
+args, = parser.parse_args_into_dataclasses(
+    args=["--output_dir", "output"]
+)
