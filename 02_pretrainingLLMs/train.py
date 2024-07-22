@@ -402,3 +402,6 @@ class CustomArguments(transformers.TrainingArguments):
     # save_strategy: str = field(default="steps")          # Can be replaced with "epoch"
     # save_steps: int = field(default=3)                   # Frequency of saving training checkpoint
     # save_total_limit: int = field(default=2)             # The total number of checkpoints to be saved    
+
+# Parse the custom arguments
+parser = transformers.HfArgumentParser(CustomArguments)
