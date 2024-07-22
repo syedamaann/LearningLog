@@ -400,9 +400,9 @@ class CustomArguments(transformers.TrainingArguments):
     report_to: str = field(default="none")               # Destination for logging (e.g., WandB, TensorBoard)
 
     # Saving configuration
-    # save_strategy: str = field(default="steps")          # Can be replaced with "epoch"
-    # save_steps: int = field(default=3)                   # Frequency of saving training checkpoint
-    # save_total_limit: int = field(default=2)             # The total number of checkpoints to be saved    
+    save_strategy: str = field(default="steps")          # Can be replaced with "epoch"
+    save_steps: int = field(default=3)                   # Frequency of saving training checkpoint
+    save_total_limit: int = field(default=1)             # The total number of checkpoints to be saved    
 
 # Parse the custom arguments
 print("Parsing the custom arguments...")
@@ -411,7 +411,7 @@ parser = transformers.HfArgumentParser(CustomArguments)
 # Set the output directory where the model will be saved
 print("Setting the output directory...")
 args, = parser.parse_args_into_dataclasses(
-    args=["--output_dir", "output"]
+    args=["--output_dir", "./output"]
 )
 
 # Setup the training dataset
@@ -468,3 +468,32 @@ def h6_open_llm_leaderboard(model_name):
     os.system(eval_cmd)
 
 # h6_open_llm_leaderboard(model_name="OUR_MODEL")
+
+model_name_or_path = "upstage/TinySolar-248m-4k"
+tokenizer = AutoTokenizer.from_pretrained(model_name_or_path)
+
+model_name_or_path = "./output/checkpoint-27"
+model2 = AutoModelForCausalLM.from_pretrained(
+    model_name_or_path,
+    device_map="auto",
+    torch_dtype=torch.bfloat16,    
+)
+
+prompt = "I am an engineer. I love"
+
+inputs = tokenizer(prompt, return_tensors="pt").to(model2.device)
+
+streamer = TextStreamer(
+    tokenizer, 
+    skip_prompt=True, 
+    skip_special_tokens=True
+)
+
+outputs = model2.generate(
+    **inputs, 
+    streamer=streamer, 
+    use_cache=True, 
+    max_new_tokens=64,     
+    do_sample=True,
+    temperature=1.0,
+)
