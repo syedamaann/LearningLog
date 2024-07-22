@@ -374,7 +374,7 @@ class CustomDataset(Dataset):                   # Inherit from Pytorch's Dataset
 @dataclass
 class CustomArguments(transformers.TrainingArguments):
     dataset_name: str = field(                           # Dataset configuration
-        default="./parquet/packaged_pretrain_dataset.parquet")
+        default="./data/packaged_pretrain_dataset.parquet")
     num_proc: int = field(default=1)                     # Number of subprocesses for data preprocessing
     max_seq_length: int = field(default=32)              # Maximum sequence length
 
@@ -391,7 +391,7 @@ class CustomArguments(transformers.TrainingArguments):
     lr_scheduler_type: str = field(default="linear")     # Type of learning rate scheduler
     gradient_checkpointing: bool = field(default=True)   # Enable gradient checkpointing to save memory
     dataloader_num_workers: int = field(default=2)       # Number of subprocesses for data loading
-    bf16: bool = field(default=True)                     # Use bfloat16 precision for training on supported hardware
+    bf16: bool = field(default=False)                    # Use bfloat16 precision for training on supported hardware
     gradient_accumulation_steps: int = field(default=1)  # Number of steps to accumulate gradients before updating model weights
     
     # Logging configuration
@@ -401,4 +401,4 @@ class CustomArguments(transformers.TrainingArguments):
     # Saving configuration
     # save_strategy: str = field(default="steps")          # Can be replaced with "epoch"
     # save_steps: int = field(default=3)                   # Frequency of saving training checkpoint
-    # save_total_limit: int = field(default=2)             # The total number of checkpoints to be saved
+    # save_total_limit: int = field(default=2)             # The total number of checkpoints to be saved    
