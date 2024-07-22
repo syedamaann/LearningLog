@@ -410,3 +410,6 @@ parser = transformers.HfArgumentParser(CustomArguments)
 args, = parser.parse_args_into_dataclasses(
     args=["--output_dir", "output"]
 )
+
+# Setup the training dataset
+train_dataset = CustomDataset(args=args)
