@@ -426,3 +426,14 @@ class LossLoggingCallback(TrainerCallback):
 
 # Initialize the callback
 loss_logging_callback = LossLoggingCallback()
+
+# create an instance of the Hugging Face Trainer object from the transformers library
+trainer = Trainer(
+    model=pretrained_model, 
+    args=args, 
+    train_dataset=train_dataset, 
+    eval_dataset=None,
+    callbacks=[loss_logging_callback] 
+)
+# initialize the training run
+trainer.train()
