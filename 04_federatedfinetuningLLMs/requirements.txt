@@ -10,7 +10,7 @@ scipy==1.13.0
 peft==0.6.2
 transformers==4.39.3
 ipywidgets==8.1.2
-gradio==3.50.2
+gradio==4.37.1
 fireworks-ai==0.14.0
 scikit-learn==1.4.0
 cryptography==42.0.7
