@@ -73,20 +73,14 @@ def train(dataset, num_epochs=10):
             question, answer = data_batch
             question_tok = tokenizer(question, padding=True, truncation=True, return_tensors='pt', max_length=max_seq_len)
             answer_tok = tokenizer(answer, padding=True, truncation=True, return_tensors='pt', max_length=max_seq_len)
-            if inx == 0 and epoch == 0:
-                print(question_tok['input_ids'].shape, answer_tok['input_ids'].shape)
             
             # Compute the embeddings: the output is of dim = 32 x 128
             question_embed = question_encoder(question_tok)
             answer_embed = answer_encoder(answer_tok)
-            if inx == 0 and epoch == 0:
-                print(question_embed.shape, answer_embed.shape)
     
             # Compute similarity scores: a 32x32 matrix
             # row[N] reflects similarity between question[N] and answers[0...31]
             similarity_scores = question_embed @ answer_embed.T
-            if inx == 0 and epoch == 0:
-                print(similarity_scores.shape)
     
             # we want to maximize the values in the diagonal
             target = torch.arange(question_embed.shape[0], dtype=torch.long)
@@ -101,3 +95,51 @@ def train(dataset, num_epochs=10):
             optimizer.step()
 
     return question_encoder, answer_encoder
+
+# Loads the dataset for training the dual encoder model
+class MyDataset(torch.utils.data.Dataset):      
+    def __init__(self, datapath):
+        self.data = pd.read_csv(datapath, sep="\t", nrows=300)
+    
+    def __len__(self):
+        return len(self.data)
+    
+    def __getitem__(self, idx):
+        return self.data.iloc[idx]['questions'], self.data.iloc[idx]['answers']
+
+dataset = MyDataset('./nq_sample.tsv')
+
+# Train the dual encoder model
+qe, ae = train(dataset, num_epochs=5)
+
+# Test the trained model
+question = 'What is the tallest mountain in the world?'
+tokenizer = AutoTokenizer.from_pretrained('bert-base-uncased')
+question_tok = tokenizer(question, padding=True, truncation=True, return_tensors='pt', max_length=64)
+question_emb = qe(question_tok)[0]
+print("Question: ", question)
+print("Question tokenized: ", question_tok)
+print("Question embedding shape: ", question_emb.shape)
+print("Question embedding: ", question_emb[:5])
+
+answers = [
+    "What is the tallest mountain in the world?",
+    "The tallest mountain in the world is Mount Everest.",
+    "Who is donald duck?"
+]
+answer_tok = []
+answer_emb = []
+for answer in answers:
+    tok = tokenizer(answer, padding=True, truncation=True, return_tensors='pt', max_length=64)
+    answer_tok.append(tok['input_ids'])
+    emb = ae(tok)[0]
+    answer_emb.append(emb)
+
+print("Answers: ", answers)
+print("Answer tokenized: ", answer_tok)
+print("First 5 elements of the first answer: ", answer_emb[0][:5])
+print("First 5 elements of the second answer: ", answer_emb[1][:5])
+print("First 5 elements of the third answer: ", answer_emb[2][:5])
+print("Similarity score between question and first answer: ", question_emb @ answer_emb[0].T)
+print("Similarity score between question and second answer: ", question_emb @ answer_emb[1].T)
+print("Similarity score between question and third answer: ", question_emb @ answer_emb[2].T)
