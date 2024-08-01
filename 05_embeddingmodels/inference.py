@@ -5,8 +5,7 @@ warnings.filterwarnings('ignore')
 import numpy as np
 
 # from sentence_transformers import SentenceTransformer
-from transformers import AutoTokenizer, \
-                         DPRContextEncoder, DPRQuestionEncoder
+from transformers import AutoTokenizer, DPRContextEncoder, DPRQuestionEncoder
 
 import logging
 logging.getLogger("transformers.modeling_utils").setLevel(logging.ERROR)
@@ -54,3 +53,20 @@ print(sim)
 best_inx = np.argmax(sim)
 print(f"Question = {question}")
 print(f"Best answer = {answers[best_inx]}")
+
+# also adding pure similarity code for comparison. uncomment the below code to compare.
+
+# Pure similarity
+# model = SentenceTransformer("all-MiniLM-L6-v2")
+# question_embedding = list(model.encode(question))
+
+# sim = []
+# for answer in answers:
+#     answer_embedding = list(model.encode(answer))
+#     sim.append(cosine_similarity_matrix(np.stack([question_embedding, answer_embedding]))[0,1])
+
+# print(sim)
+# best_inx = np.argmax(sim)
+# print("Pure Similarity")
+# print(f"Question = {question}")
+# print(f"Best answer = {answers[best_inx]}")
