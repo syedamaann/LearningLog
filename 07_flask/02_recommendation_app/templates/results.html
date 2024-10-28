@@ -1,0 +1,14 @@
+<!doctype html>
+<html>
+<head><title>Recommendations</title></head>
+<body>
+    <h1>Recommendations</h1>
+    <ul>
+        {% for item in recommendations %}
+            <li>{{ item['item'] }} - Similarity: {{ item['similarity'] }}</li>
+        {% endfor %}
+    </ul>
+    <a href="{{ url_for('home') }}">Search Again</a>
+</body>
+</html>
+
