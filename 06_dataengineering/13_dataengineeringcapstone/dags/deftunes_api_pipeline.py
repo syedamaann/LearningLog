@@ -180,11 +180,14 @@ def deftunes_pipeline():
     end = DummyOperator(task_id="end")
 
     start >> [api_users_extract_glue_job, api_sessions_extract_glue_job]
+
     [
         api_users_extract_glue_job,
         api_sessions_extract_glue_job,
     ] >> json_transform_glue_job
+
     json_transform_glue_job >> [dq_check_users_job, dq_check_sessions_job]
+    
     [dq_check_users_job, dq_check_sessions_job] >> task_dbt
     task_dbt >> end
 
