@@ -1,0 +1,3 @@
+File Base Directory, Metric, Value, Notes
+E1, Spatial Categorical Accuracy, 0.7778187394142151
+E2, Spatial Categorical Accuracy, 0.8102505207061768, first we noted that the number of titles in each topic is not uniform between train and test datasets so we combined the train and test datasets, then we made the train-dev-test splits such that the topics are evenly distributed among train-dev-test datatsets
